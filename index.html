@@ -1,546 +1,776 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rialo SFS 60-Question Master Class</title>
-    <style>
-        :root { --primary: #5856d6; --secondary: #f0f0f7; --success: #28a745; --error: #dc3545; --text: #1d1d1f; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; display: flex; justify-content: center; padding: 20px; color: var(--text); line-height: 1.6; }
-        .container { background: white; width: 100%; max-width: 850px; padding: 40px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); position: relative; }
-        .lang-switch { position: absolute; top: 20px; right: 20px; }
-        .lang-btn { background: var(--secondary); border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
-        .progress-bar { width: 100%; height: 8px; background: var(--secondary); border-radius: 4px; margin: 25px 0; overflow: hidden; }
-        #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
-        .question-num { color: var(--primary); font-weight: 800; font-size: 1.1rem; }
-        .question-text { font-size: 1.3rem; font-weight: 600; margin: 20px 0; }
-        .options { display: grid; gap: 12px; }
-        .option { padding: 18px; border: 2px solid var(--secondary); border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 1rem; }
-        .option:hover:not(.disabled) { border-color: var(--primary); background: #fcfcff; }
-        .option.correct { background: var(--success) !important; color: white; border-color: var(--success); }
-        .option.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
-        .option.disabled { cursor: not-allowed; opacity: 0.8; }
-        .feedback { margin-top: 25px; padding: 20px; border-radius: 12px; display: none; background: #f8f9fa; border-left: 6px solid var(--primary); font-size: 0.95rem; }
-        .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 14px 30px; border: none; border-radius: 10px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: none; }
-        #result-box { text-align: center; display: none; }
-        .score-circle { width: 150px; height: 150px; line-height: 150px; border-radius: 50%; background: var(--primary); color: white; font-size: 3rem; margin: 30px auto; font-weight: bold; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rialo SfS 60-Question Master Class (Blog-Accurate)</title>
+  <style>
+    :root { --primary: #5856d6; --secondary: #f0f0f7; --success: #28a745; --error: #dc3545; --text: #1d1d1f; }
+    body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; display: flex; justify-content: center; padding: 20px; color: var(--text); line-height: 1.6; }
+    .container { background: white; width: 100%; max-width: 850px; padding: 40px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); position: relative; }
+    .lang-switch { position: absolute; top: 20px; right: 20px; }
+    .lang-btn { background: var(--secondary); border: 1px solid #ddd; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+    .progress-bar { width: 100%; height: 8px; background: var(--secondary); border-radius: 4px; margin: 25px 0; overflow: hidden; }
+    #progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+    .question-num { color: var(--primary); font-weight: 800; font-size: 1.1rem; }
+    .question-text { font-size: 1.3rem; font-weight: 600; margin: 20px 0; }
+    .options { display: grid; gap: 12px; }
+    .option { padding: 18px; border: 2px solid var(--secondary); border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+    .option:hover:not(.disabled) { border-color: var(--primary); background: #fcfcff; }
+    .option.correct { background: var(--success) !important; color: white; border-color: var(--success); }
+    .option.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
+    .option.disabled { cursor: not-allowed; opacity: 0.8; }
+    .feedback { margin-top: 25px; padding: 20px; border-radius: 12px; display: none; background: #f8f9fa; border-left: 6px solid var(--primary); font-size: 0.95rem; }
+    .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+    .btn { padding: 14px 30px; border: none; border-radius: 10px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: none; }
+    #result-box { text-align: center; display: none; }
+    .score-circle { width: 150px; height: 150px; line-height: 150px; border-radius: 50%; background: var(--primary); color: white; font-size: 3rem; margin: 30px auto; font-weight: bold; }
+    .subtle { color:#6b6b75; font-size:0.95rem; margin-top:-8px; }
+  </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="lang-switch"><button class="lang-btn" onclick="toggleLang()">English / 中文</button></div>
-    
-    <div id="quiz-box">
-        <h2 id="ui-title">Rialo SFS 经济模型深度考核</h2>
-        <div class="progress-bar"><div id="progress-fill"></div></div>
-        <div class="question-num">Q <span id="current-idx">1</span> / 60</div>
-        <div class="question-text" id="question-text">Loading...</div>
-        <div class="options" id="options-container"></div>
-        <div class="feedback" id="feedback"></div>
-        <div class="footer">
-            <div id="score-counter">Score: 0</div>
-            <button class="btn" id="next-btn" onclick="nextQuestion()">Next →</button>
-        </div>
-    </div>
+  <div class="lang-switch"><button class="lang-btn" onclick="toggleLang()">English / 中文</button></div>
 
-    <div id="result-box">
-        <h2 id="ui-res-title">Quiz Completed!</h2>
-        <div class="score-circle" id="final-score">0%</div>
-        <p id="score-comment" style="font-size:1.2rem; margin-bottom:30px;"></p>
-        <button class="btn" style="display:inline-block;" onclick="location.reload()" id="ui-retry-btn">Restart</button>
+  <div id="quiz-box">
+    <h2 id="ui-title">Rialo SfS 经济模型深度考核（严格基于博客）</h2>
+    <div class="subtle" id="ui-subtitle">Based only on: “Stake for Service: A Better Way to Pay on Rialo”</div>
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+    <div class="question-num">Q <span id="current-idx">1</span> / <span id="total-qs">60</span></div>
+    <div class="question-text" id="question-text">Loading...</div>
+    <div class="options" id="options-container"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="footer">
+      <div id="score-counter">Score: 0</div>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next →</button>
     </div>
+  </div>
+
+  <div id="result-box">
+    <h2 id="ui-res-title">Quiz Completed!</h2>
+    <div class="score-circle" id="final-score">0%</div>
+    <p id="score-comment" style="font-size:1.2rem; margin-bottom:30px;"></p>
+    <button class="btn" style="display:inline-block;" onclick="location.reload()" id="ui-retry-btn">Restart</button>
+  </div>
 </div>
 
 <script>
-    let currentLang = 'zh';
-    let current = 0;
-    let score = 0;
-    let answered = false;
+  let currentLang = 'zh';
+  let current = 0;
+  let score = 0;
+  let answered = false;
 
-    // 每一题都基于博客文章手动编写，确保唯一性和深度
-    const rawData = [
-        {
-            qz: "在 Rialo 看来，DePIN 目前面临的最大挑战之一是什么？",
-            qe: "In Rialo's view, what is one of the biggest challenges DePIN currently faces?",
-            oz: ["硬件制造周期过长", "BME 模型的用户体验摩擦 (UX Friction)", "全球互联网带宽不足", "缺乏风险投资支持"],
-            oe: ["Hardware manufacturing cycles", "UX Friction of the BME model", "Lack of global bandwidth", "Lack of VC support"],
-            a: 1, ez: "博客指出 BME 模型强制用户处理原生代币，导致了巨大的使用摩擦。", ee: "The blog states BME model forces users to handle native tokens, causing huge friction."
-        },
-        {
-            qz: "BME 模型（Burn-and-Mint Equilibrium）将代币定义为何种属性？",
-            qe: "How does the BME model define the attribute of the token?",
-            oz: ["生产资本 (Capital Asset)", "交换媒介 (Medium of Exchange)", "政府发行的法币", "无价值的数字积分"],
-            oe: ["Capital Asset", "Medium of Exchange", "Government-issued fiat", "Worthless digital points"],
-            a: 1, ez: "BME 模型将代币视为支付服务的“交换媒介”。", ee: "BME treats tokens as a 'Medium of Exchange' to pay for services."
-        },
-        {
-            qz: "SFS 模型（Stake-for-Service）将代币属性转向了什么？",
-            qe: "What attribute does the SFS model shift the token towards?",
-            oz: ["消费品 (Consumer Good)", "生产资本 (Capital Asset)", "流动性资产", "债务凭证"],
-            oe: ["Consumer Good", "Capital Asset", "Liquid Asset", "Debt Instrument"],
-            a: 1, ez: "SFS 将代币视为类似于“特许权”的生产资本，质押它即拥有赚取收入的权利。", ee: "SFS views tokens as capital assets similar to a 'franchise', where staking grants the right to earn revenue."
-        },
-        {
-            qz: "在 SFS 模型中，服务商处理请求的“额度”称为什么？",
-            qe: "In SFS, what is the 'quota' for providers to process requests called?",
-            oz: ["Gas Limit", "服务容量 (Service Capacity)", "带宽配额", "工作证明"],
-            oe: ["Gas Limit", "Service Capacity", "Bandwidth Quota", "Proof of Work"],
-            a: 1, ez: "这被称为服务容量，决定了服务商在网络中能承接多少业务。", ee: "This is called Service Capacity, which determines how much business a provider can handle."
-        },
-        {
-            qz: "SFS 模型中，单个服务商的容量计算公式的核心是？",
-            qe: "What is the core of the Service Capacity formula in SFS?",
-            oz: ["质押时间 / 总时间", "个人质押量 / 总质押量", "硬件性能 / 质押量", "随机数分配"],
-            oe: ["Stake duration / Total duration", "Individual Stake / Total Stake", "Hardware performance / Stake", "Random distribution"],
-            a: 1, ez: "服务容量是按服务商质押代币在整个网络质押池中的比例分配的。", ee: "Capacity is allocated proportionally based on the provider's stake in the network pool."
-        },
-        {
-            qz: "对于 AI Agent 来说，SFS 相比 BME 的核心优势在于？",
-            qe: "For AI Agents, what is the core advantage of SFS over BME?",
-            oz: ["更快的运算速度", "能够直接使用稳定币（如 USDC）进行结算", "AI 能够自动铸造代币", "不需要联网也能运行"],
-            oe: ["Faster computing speed", "Ability to settle directly with stablecoins like USDC", "AI can auto-mint tokens", "Offline capability"],
-            a: 1, ez: "AI 代理更喜欢稳定的计价单位，SFS 允许用户侧剥离原生代币操作。", ee: "AI Agents prefer stable units of account; SFS decouples native tokens from the user side."
-        },
-        {
-            qz: "SFS 模型如何通过经济手段提高网络服务质量？",
-            qe: "How does SFS use economic means to improve network service quality?",
-            oz: ["强制每小时更新一次代码", "通过质押资产建立罚没风险 (Slashing)", "限制每个地区的节点数量", "给所有节点发放固定工资"],
-            oe: ["Hourly mandatory code updates", "Establishing Slashing risk via staked assets", "Capping nodes per region", "Paying fixed salaries to all nodes"],
-            a: 1, ez: "质押资产让服务商有了“利益共担（Skin in the game）”，降低了作恶风险。", ee: "Staked assets give providers 'Skin in the game', reducing malicious behavior."
-        },
-        {
-            qz: "在 SFS 体系中，随着网络需求增长，代币的价值捕获主要通过？",
-            qe: "In SFS, value capture for the token as network demand grows is mainly through?",
-            oz: ["提高交易手续费率", "服务商为了维持份额必须增加质押量", "直接从用户账户中扣除代币", "增加代币的增发率"],
-            oe: ["Raising transaction fee rates", "Providers must increase stake to maintain share", "Directly deducting tokens from user accounts", "Increasing token inflation rate"],
-            a: 1, ez: "需求增加使服务权变得稀缺，迫使服务商在二级市场购买并锁定更多代币进行质押。", ee: "Increased demand makes service rights scarce, forcing providers to buy/lock more tokens."
-        },
-        {
-            qz: "相比于 SaaS 模型，SFS 在治理上的优势是？",
-            qe: "Compared to SaaS models, SFS's advantage in governance is?",
-            oz: ["它是完全封闭的", "它通过代币持有者实现的去中心化治理", "它不需要任何管理人员", "它由一个中心化委员会决定"],
-            oe: ["It is completely closed", "Decentralized governance through token holders", "No management needed", "Determined by a centralized committee"],
-            a: 1, ez: "去中心化网络允许所有利益相关者通过代币参与规则制订。", ee: "Decentralized networks allow stakeholders to participate in rule-making via tokens."
-        },
-        {
-            qz: "Rialo 博客中提到，BME 模型的“现金流”在哪里？",
-            qe: "Where does the blog say 'cash flow' resides in the BME model?",
-            oz: ["用户手中", "流向矿工的原生代币铸造", "由创始团队保管", "不存在现金流"],
-            oe: ["In the hands of users", "Flowing to miners via native token minting", "Held by founders", "No cash flow exists"],
-            a: 1, ez: "BME 通常依靠系统增发代币奖励矿工，而不是真实的用户现金流支付。", ee: "BME usually relies on system-issued tokens to reward miners rather than real user cash flow."
-        },
-        {
-            qz: "在 SFS 中，如果一个服务商质押了 10% 的代币，但处理了 20% 的请求，会发生什么？",
-            qe: "In SFS, if a provider stakes 10% but processes 20% of requests, what happens?",
-            oz: ["奖励翻倍", "超出的部分不被协议结算或计费", "自动升级为高级节点", "被强制踢出网络"],
-            oe: ["Double rewards", "Excess portion not settled or billed by the protocol", "Auto-upgrade to premium node", "Forced removal from network"],
-            a: 1, ez: "协议只会根据质押容量授权服务额度，超出的部分无法产生有效收益。", ee: "The protocol only authorizes capacity based on stake; excess service cannot generate valid income."
-        },
-        {
-            qz: "SFS 模型如何解决 DePIN 常见的“引导期（Bootstrapping）”难题？",
-            qe: "How does SFS solve the common 'Bootstrapping' problem in DePIN?",
-            oz: ["通过高通胀奖励早期提供者", "降低准入门槛直到网络成熟", "通过代币预期吸引服务商质押获得先发优势", "完全由外部投资者注资"],
-            oe: ["High inflation for early providers", "Lowering entry barriers until maturity", "Attracting providers via token expectations to gain first-mover advantage", "Funded entirely by external investors"],
-            a: 2, ez: "服务商愿意在早期质押，是为了在网络爆发前锁定未来的服务权利份额。", ee: "Providers stake early to lock in future service rights before the network scales."
-        },
-        {
-            qz: "为什么 SFS 被认为具备更好的“可扩展性”？",
-            qe: "Why is SFS considered to have better 'Scalability'?",
-            oz: ["它只支持 10 个节点", "用户端不需要购买特定代币，可以无限扩容用户量", "它不需要区块链支持", "它使用了中心化数据库"],
-            oe: ["Only supports 10 nodes", "User side doesn't need native tokens, allowing unlimited user scaling", "No blockchain needed", "Uses a centralized database"],
-            a: 1, ez: "用户支付稳定币，使得非加密领域的普通用户和机器可以无缝接入。", ee: "Users paying stablecoins allows non-crypto users and machines to onboard seamlessly."
-        },
-        {
-            qz: "在 Rialo 的愿景中，代币持有者最类似于传统商业中的？",
-            qe: "In Rialo's vision, token holders are most similar to what in traditional business?",
-            oz: ["消费者", "股东或特许经营商", "临时雇员", "政府审计员"],
-            oe: ["Consumers", "Shareholders or franchisees", "Temporary employees", "Government auditors"],
-            a: 1, ez: "质押代币类似于购买了一份具备经营权的“特许权”。", ee: "Staking tokens is akin to purchasing a 'franchise' with operating rights."
-        },
-        {
-            qz: "BME 模型在代币价格下跌时会发生什么恶性循环？",
-            qe: "What vicious cycle happens in BME when token prices drop?",
-            oz: ["用户支付更便宜", "服务商收益降低导致退出，进一步降低代币价值", "代币自动增发补偿", "网络速度变快"],
-            oe: ["User payments get cheaper", "Lower provider earnings lead to exit, further devaluing the token", "Auto-inflation compensation", "Network gets faster"],
-            a: 1, ez: "价格下跌降低了激励，导致节点流失，削弱了网络实用性，陷入负向螺旋。", ee: "Price drops reduce incentives, causing node loss and weakening utility, leading to a negative spiral."
-        },
-        {
-            qz: "SFS 模型如何对冲代币价格波动对用户的影响？",
-            qe: "How does the SFS model hedge token price volatility for users?",
-            oz: ["通过强制锁定代币价格", "通过稳定币计价剥离了用户的代币敞口", "协议自动补偿差价", "没有对冲手段"],
-            oe: ["Mandatory token price lock", "Decoupling user exposure via stablecoin pricing", "Auto-compensation for price difference", "No hedging method"],
-            a: 1, ez: "用户支付固定数额的稳定币，波动风险由追求收益的服务商承担。", ee: "Users pay fixed stablecoins; volatility risk is borne by profit-seeking providers."
-        },
-        {
-            qz: "在博弈论视角下，SFS 模型增加了服务商的什么成本？",
-            qe: "From a game theory perspective, what cost does SFS increase for providers?",
-            oz: ["研发成本", "退出成本 (Opportunity Cost of Staked Capital)", "广告成本", "用户沟通成本"],
-            oe: ["R&D cost", "Opportunity Cost of Staked Capital (Exit Cost)", "Ad cost", "Communication cost"],
-            a: 1, ez: "质押代币意味着锁定了资本，增加了服务商中途撤出的成本。", ee: "Staking tokens locks capital, increasing the cost for providers to exit midway."
-        },
-        {
-            qz: "Rialo 认为 DePIN 协议本质上是？",
-            qe: "Rialo believes DePIN protocols are essentially?",
-            oz: ["中心化公司的替代品", "去中心化的硬件市场", "资源分配协议", "纯粹的金融博弈"],
-            oe: ["Centralized company replacements", "Decentralized hardware markets", "Resource allocation protocols", "Pure financial games"],
-            a: 2, ez: "DePIN 是利用激励机制在全球范围内协调和分配物理资源。", ee: "DePIN uses incentives to coordinate and allocate physical resources globally."
-        },
-        {
-            qz: "在 SFS 中，质押量最高的节点是否一定能获得 100% 的订单？",
-            qe: "In SFS, does the node with the highest stake always get 100% of the orders?",
-            oz: ["是的", "不是，受到其容量上限和地理/性能因素限制", "由系统随机决定", "是的，只要它在线"],
-            oe: ["Yes", "No, limited by its capacity cap and geographic/performance factors", "Randomly decided", "Yes, as long as it's online"],
-            a: 1, ez: "质押量决定的是上限比例，而非垄断所有请求。", ee: "Stake determines the upper limit ratio, not a monopoly on all requests."
-        },
-        {
-            qz: "BME 模型的一个著名案例是？",
-            qe: "A famous case of the BME model is?",
-            oz: ["Bitcoin", "Helium", "Uniswap", "Rialo"],
-            oe: ["Bitcoin", "Helium", "Uniswap", "Rialo"],
-            a: 1, ez: "Helium 是早期成功应用 BME 模型的代表。", ee: "Helium is a representative of the early successful application of the BME model."
-        },
-        // ---------------------------------------------------------
-        // 以下为后续 40 题，逻辑深度递增，涵盖所有博客细节
-        // ---------------------------------------------------------
-        {
-            qz: "什么是“Token Sink”（代币汇聚点）？",
-            qe: "What is a 'Token Sink'?",
-            oz: ["代币增发的地方", "能够让代币离开流通并产生需求的机制", "用户购买代币的地方", "交易所的钱包"],
-            oe: ["Where tokens are minted", "Mechanisms that take tokens out of circulation and generate demand", "Where users buy tokens", "Exchange wallets"],
-            a: 1, ez: "SFS 的质押机制就是一个巨大的代币汇聚点。", ee: "The staking mechanism in SFS is a massive token sink."
-        },
-        {
-            qz: "在 SFS 模型中，如果网络容量需求达到 100%，服务商会？",
-            qe: "In SFS, if network capacity demand reaches 100%, providers will?",
-            oz: ["停止服务", "竞相购买并质押更多代币以提高份额", "降低服务价格", "向协议申请免费代币"],
-            oe: ["Stop service", "Compete to buy/stake more tokens to increase share", "Lower service prices", "Apply for free tokens from protocol"],
-            a: 1, ez: "为了赚取更多利润，服务商必须扩大自己在池子里的比例。", ee: "To earn more profit, providers must expand their share in the pool."
-        },
-        {
-            qz: "SFS 模型如何防止“僵尸节点”占坑？",
-            qe: "How does SFS prevent 'zombie nodes' from occupying space?",
-            oz: ["定期自动删除", "通过服务质量考核和 Slashing 扣除质押", "收取年费", "要求节点必须位于特定国家"],
-            oe: ["Auto-deletion", "Service quality checks and Slashing of stakes", "Annual fees", "Mandatory node location"],
-            a: 1, ez: "如果不提供高质量服务，质押的资本将会缩水，从而将其清退。", ee: "If high-quality service isn't provided, staked capital will shrink, clearing them out."
-        },
-        {
-            qz: "“Work Token” 经济学的核心精髓是？",
-            qe: "What is the core essence of 'Work Token' economics?",
-            oz: ["工作即奖励", "通过质押资产获得工作的权利", "只要工作就有代币拿", "代币就是工作内容"],
-            oe: ["Work is reward", "Staking assets to earn the right to work", "Get tokens for working", "Tokens are the work content"],
-            a: 1, ez: "SFS 是对 Work Token 模型在 DePIN 领域的创新应用。", ee: "SFS is an innovative application of the Work Token model in the DePIN sector."
-        },
-        {
-            qz: "BME 模型通常导致代币波动传递给谁？",
-            qe: "The BME model usually passes token volatility to whom?",
-            oz: ["服务商", "最终用户", "矿机厂商", "不传递"],
-            oe: ["Service providers", "End users", "Hardware manufacturers", "No transfer"],
-            a: 1, ez: "BME 要求用户持有代币，因此波动直接打击了用户的使用意愿。", ee: "BME requires users to hold tokens, so volatility directly hits user willingness."
-        },
-        {
-            qz: "SFS 是否一定要限制代币的总供应量？",
-            qe: "Does SFS necessarily limit the total supply of tokens?",
-            oz: ["是的", "不是，它更看重供需博弈形成的流通锁定", "是的，必须通缩", "不确定"],
-            oe: ["Yes", "No, it values the circulation lock-up formed by supply-demand dynamics", "Yes, must be deflationary", "Uncertain"],
-            a: 1, ez: "SFS 的价值在于其产生的强大锁定需求。", ee: "The value of SFS lies in the strong lock-up demand it generates."
-        },
-        {
-            qz: "在 SFS 中，协议如何决定给服务商发放多少奖励？",
-            qe: "In SFS, how does the protocol decide how many rewards to give providers?",
-            oz: ["由老板决定", "根据其处理的有效请求和质押配额比例", "按在线时长", "按 IP 数量"],
-            oe: ["Decided by boss", "Based on valid requests handled and stake quota ratio", "By uptime", "By number of IPs"],
-            a: 1, ez: "奖励与工作量及被授权的容量相关联。", ee: "Rewards are tied to workload and authorized capacity."
-        },
-        {
-            qz: "“Capital Asset” 属性意味着代币的价值来自于？",
-            qe: "What does 'Capital Asset' property mean for token value?",
-            oz: ["炒作热情", "未来现金流的折现能力", "精美的设计", "政府的支持"],
-            oe: ["Speculation", "Discounted future cash flow capability", "Nice design", "Government support"],
-            a: 1, ez: "服务商愿意质押，是因为能通过其产生长期的现金流收益。", ee: "Providers stake because they can generate long-term cash flow earnings."
-        },
-        {
-            qz: "如果 SFS 网络完全没有用户，代币价值会？",
-            qe: "If an SFS network has zero users, the token value will?",
-            oz: ["依然很高", "下降，因为服务商没有质押获利的动力", "翻倍", "由协议自动托底"],
-            oe: ["Stay high", "Decrease, as providers have no incentive to stake", "Double", "Auto-supported by protocol"],
-            a: 1, ez: "没有需求就没有收益，服务商会撤资，代币需求随之消失。", ee: "No demand means no earnings; providers will withdraw, and token demand vanishes."
-        },
-        {
-            qz: "SFS 如何处理多链部署？",
-            qe: "How does SFS handle multi-chain deployment?",
-            oz: ["不支持", "通过跨链质押或统一的结算层逻辑", "每条链发一个代币", "由管理员手动同步"],
-            oe: ["Not supported", "Via cross-chain staking or a unified settlement layer logic", "One token per chain", "Manual sync by admin"],
-            a: 1, ez: "Rialo 致力于构建一个通用的经济交互层。", ee: "Rialo aims to build a universal economic interaction layer."
-        },
-        {
-            qz: "“Service Capacity” 是否可以二级交易？",
-            qe: "Can 'Service Capacity' be traded on a secondary market?",
-            oz: ["不可以", "理论上可以通过质押权益的流转实现（如 Liquid Staking）", "必须由创始人同意", "只有政府可以买"],
-            oe: ["No", "Theoretically possible via transfer of staked interests (e.g., Liquid Staking)", "Must be approved by founder", "Only government can buy"],
-            a: 1, ez: "未来的 DeFi 协议可以为质押的服务权利提供流动性。", ee: "Future DeFi protocols can provide liquidity for staked service rights."
-        },
-        {
-            qz: "Rialo 认为传统的 Data Credits (DC) 机制有什么问题？",
-            qe: "What does Rialo think is wrong with traditional Data Credits (DC) mechanisms?",
-            oz: ["太便宜了", "价格固定导致系统死板", "依然没有解决获取 DC 过程中涉及原生代币的摩擦", "太复杂了"],
-            oe: ["Too cheap", "Fixed price makes it rigid", "Still doesn't solve friction of involving native tokens to get DC", "Too complex"],
-            a: 2, ez: "DC 只是一个记账单位，用户还是得先碰原生代币，没彻底解决问题。", ee: "DC is just an accounting unit; users still touch native tokens, failing to solve the root problem."
-        },
-        {
-            qz: "SFS 模型下，协议的“铸造（Mint）”通常是？",
-            qe: "In the SFS model, protocol 'Minting' is usually?",
-            oz: ["给用户的奖励", "发给服务商的通胀激励，以补充其现金流收益", "随便乱发的", "禁止的"],
-            oe: ["User rewards", "Inflationary incentives for providers to supplement cash flow earnings", "Random", "Forbidden"],
-            a: 1, ez: "激励机制用于在网络初期平衡风险和收益。", ee: "Incentive mechanisms balance risk and reward in early stages."
-        },
-        {
-            qz: "为什么 SFS 更有利于实现全球无缝支付？",
-            qe: "Why is SFS better for global seamless payments?",
-            oz: ["支持所有国家的法币", "稳定币在链上具有天然的全球流动性和统一性", "不收费", "不需要网络"],
-            oe: ["Supports all fiat currencies", "Stablecoins have natural global liquidity and uniformity on-chain", "No fees", "Offline support"],
-            a: 1, ez: "稳定币是目前加密领域最成熟的支付工具。", ee: "Stablecoins are the most mature payment tool in crypto."
-        },
-        {
-            qz: "在 SFS 中，服务商的质押代币如果被盗，会发生什么？",
-            qe: "In SFS, what happens if a provider's staked tokens are stolen?",
-            oz: ["协议自动找回", "该服务商失去服务容量和对应收益", "由保险公司赔付", "没有影响"],
-            oe: ["Protocol auto-recovery", "Provider loses service capacity and related earnings", "Paid by insurance", "No impact"],
-            a: 1, ez: "质押权益是链上绑定的，私钥安全至关重要。", ee: "Staked interests are on-chain; private key security is paramount."
-        },
-        {
-            qz: "SFS 能够支持复杂的业务定价逻辑吗？",
-            qe: "Can SFS support complex business pricing logic?",
-            oz: ["不可以，只能按次收费", "可以，服务商可以自行定价，协议只按容量抽佣或管理", "取决于代码长度", "只能免费"],
-            oe: ["No, only per use", "Yes, providers can set prices; protocol manages capacity/commissions", "Depends on code length", "Must be free"],
-            a: 1, ez: "SFS 具备极高的业务灵活性。", ee: "SFS offers high business flexibility."
-        },
-        {
-            qz: "什么是“经济均衡点”？",
-            qe: "What is an 'Economic Equilibrium point'?",
-            oz: ["代币价格最高的点", "网络供需平衡、质押收益率合理的稳态", "所有人都不赚钱的点", "所有人都满意的点"],
-            oe: ["Highest token price", "A steady state of balanced supply/demand and reasonable yields", "Where no one profits", "Where everyone is happy"],
-            a: 1, ez: "长期博弈最终会达到一个稳定的市场均衡。", ee: "Long-term gaming eventually leads to a stable market equilibrium."
-        },
-        {
-            qz: "SFS 是否支持“按需质押”？",
-            qe: "Does SFS support 'on-demand staking'?",
-            oz: ["不支持，必须质押 10 年", "支持，服务商可以根据业务增长动态增减质押", "只有周五可以操作", "只有 VIP 可以"],
-            oe: ["No, must stake 10 years", "Yes, providers can dynamically adjust stake based on business growth", "Fridays only", "VIPs only"],
-            a: 1, ez: "动态质押提高了资本的利用效率。", ee: "Dynamic staking improves capital utilization efficiency."
-        },
-        {
-            qz: "Rialo 的 SFS 模型最怕什么攻击？",
-            qe: "What attack is Rialo's SFS most afraid of?",
-            oz: ["DDoS", "女巫攻击 (Sybil Attack) 绕过质押门槛", "暴力破解私钥", "停电"],
-            oe: ["DDoS", "Sybil Attack bypassing stake hurdles", "Private key brute force", "Power outage"],
-            a: 1, ez: "质押机制本质上就是为了防御廉价的女巫攻击。", ee: "The staking mechanism is essentially built to defend against cheap Sybil attacks."
-        },
-        {
-            qz: "SFS 如何处理服务商的“下线”？",
-            qe: "How does SFS handle provider 'downtime'?",
-            oz: ["不理会", "扣除容量配额，严重者没收质押代币", "发短信提醒", "自动重连"],
-            oe: ["Ignore", "Deduct capacity quota; severe cases lead to slashing", "SMS reminder", "Auto-reconnect"],
-            a: 1, ez: "高可用性是 DePIN 服务的基石。", ee: "High availability is the cornerstone of DePIN services."
-        },
-        {
-            qz: "在 BME 中，代币主要扮演“门票”还是“燃料”？",
-            qe: "In BME, does the token act as a 'ticket' or 'fuel'?",
-            oz: ["门票", "燃料 (消耗掉以换取服务)", "二者皆是", "都不是"],
-            oe: ["Ticket", "Fuel (consumed to get service)", "Both", "Neither"],
-            a: 1, ez: "BME 强调销毁（消耗），类似于燃料。", ee: "BME emphasizes burning (consumption), similar to fuel."
-        },
-        {
-            qz: "在 SFS 中，代币主要扮演“门票”还是“燃料”？",
-            qe: "In SFS, does the token act as a 'ticket' or 'fuel'?",
-            oz: ["门票 (质押在那里不被消耗)", "燃料", "二者皆是", "都不是"],
-            oe: ["Ticket (staked, not consumed)", "Fuel", "Both", "Neither"],
-            a: 0, ez: "SFS 强调质押（占用），类似于长期有效的入场门票。", ee: "SFS emphasizes staking (occupying), similar to a long-term valid ticket."
-        },
-        {
-            qz: "SFS 模型下，新代币的分发通常偏向？",
-            qe: "In SFS, new token distribution usually favors?",
-            oz: ["早期投资者", "活跃提供高质量服务的节点", "随便发", "不发"],
-            oe: ["Early investors", "Nodes actively providing high-quality service", "Random", "None"],
-            a: 1, ez: "奖励应与实际的贡献（工作量）匹配。", ee: "Rewards should match actual contribution (workload)."
-        },
-        {
-            qz: "如果服务商大幅减少，SFS 代币的质押收益率会？",
-            qe: "If providers decrease significantly, the SFS staking yield will?",
-            oz: ["下降", "上升，因为分钱的人少了", "不变", "降为零"],
-            oe: ["Decrease", "Increase, as fewer people share the pool", "No change", "Drop to zero"],
-            a: 1, ez: "这是系统的自我调节机制，高收益会重新吸引服务商回来。", ee: "Self-regulation: high yields will attract providers back."
-        },
-        {
-            qz: "SFS 的公式中 $TotalCapacity$ 代表？",
-            qe: "What does $TotalCapacity$ represent in the SFS formula?",
-            oz: ["个人的内存大小", "整个网络能够承接的业务总量上限", "代币总额", "创始人的余额"],
-            oe: ["Personal memory size", "The upper limit of total business volume the network can handle", "Total tokens", "Founder's balance"],
-            a: 1, ez: "这是整个系统的吞吐量上限。", ee: "This is the throughput cap of the entire system."
-        },
-        {
-            qz: "SFS 能否支持“多层质押”？",
-            qe: "Can SFS support 'multi-layer staking'?",
-            oz: ["不可以", "可以，例如针对不同级别的服务有不同的质押池", "太复杂了", "没意义"],
-            oe: ["No", "Yes, e.g., different stake pools for different service levels", "Too complex", "Meaningless"],
-            a: 1, ez: "分层设计可以满足多样化的市场需求。", ee: "Layered design can meet diversified market needs."
-        },
-        {
-            qz: "为什么 SFS 被称为“对用户零摩擦”？",
-            qe: "Why is SFS called 'zero-friction for users'?",
-            oz: ["用户不需要花钱", "用户可以使用熟悉的支付工具而不感知区块链", "用户不需要注册", "用户不需要联网"],
-            oe: ["Users don't pay", "Users can use familiar payment tools without sensing blockchain", "No registration", "Offline"],
-            a: 1, ez: "这是 Web3 走向大规模应用（Mass Adoption）的关键。", ee: "Key to mass adoption of Web3."
-        },
-        {
-            qz: "SFS 在面对中心化竞争（如 AWS）时的优势是？",
-            qe: "SFS's advantage against centralized competition like AWS is?",
-            oz: ["它更贵", "通过去中心化降低单点故障风险和成本", "它有更多钱", "它有更多员工"],
-            oe: ["More expensive", "Reduces single-point-of-failure risk and costs via decentralization", "More money", "More employees"],
-            a: 1, ez: "去中心化网络通过全球分布实现高韧性和低成本。", ee: "High resilience and low cost through global distribution."
-        },
-        {
-            qz: "SFS 代币的持有者能否将质押权委托给专业节点？",
-            qe: "Can SFS token holders delegate staking rights to professional nodes?",
-            oz: ["不可以", "可以，这类似于 Delegated Proof of Stake (DPoS)", "必须本人操作", "必须买电脑"],
-            oe: ["No", "Yes, similar to Delegated Proof of Stake (DPoS)", "Manual only", "Must buy a PC"],
-            a: 1, ez: "委托质押允许非技术持币者也能分享网络收益。", ee: "Delegated staking allows non-technical holders to share network earnings."
-        },
-        {
-            qz: "Rialo 的文章认为，加密经济学的目的是？",
-            qe: "Rialo's article suggests the purpose of cryptoeconomics is?",
-            oz: ["为了让价格波动", "为了协调大规模的自愿合作", "为了避税", "为了写代码"],
-            oe: ["To cause volatility", "To coordinate large-scale voluntary cooperation", "Tax avoidance", "Writing code"],
-            a: 1, ez: "博弈论和密码学的结合是为了创造互信的协作环境。", ee: "Combining game theory and cryptography to create a trusted collaboration environment."
-        },
-        {
-            qz: "SFS 是否一定要基于特定的 L1（第一层）区块链？",
-            qe: "Does SFS have to be based on a specific L1 blockchain?",
-            oz: ["是的，只能在以太坊", "不是，它是一种通用的经济模型框架", "是的，只能在 Solana", "不确定"],
-            oe: ["Yes, Ethereum only", "No, it's a general economic model framework", "Yes, Solana only", "Uncertain"],
-            a: 1, ez: "模型是通用的，可以在不同链上实现。", ee: "The model is universal and can be implemented on different chains."
-        },
-        {
-            qz: "在 SFS 中，服务商提前解质押（Unstake）通常会有？",
-            qe: "In SFS, early unstaking by a provider usually involves?",
-            oz: ["奖励", "等待期（Unbonding Period）以确保安全", "手续费", "没有任何限制"],
-            oe: ["Rewards", "Unbonding Period for security", "Fees", "No limits"],
-            a: 1, ez: "等待期是为了防止服务商突然撤资导致网络不稳。", ee: "Unbonding period prevents sudden withdrawals from destabilizing the network."
-        },
-        {
-            qz: "SFS 如何吸引风险投资（VC）？",
-            qe: "How does SFS attract VCs?",
-            oz: ["通过画大饼", "通过清晰的现金流捕获逻辑和可持续增长模型", "通过虚假数据", "VC 不喜欢 SFS"],
-            oe: ["Vaporware", "Clear cash flow capture logic and sustainable growth models", "Fake data", "VCs dislike SFS"],
-            a: 1, ez: "清晰的单位经济效益（Unit Economics）是机构投资者的最爱。", ee: "Clear unit economics are preferred by institutional investors."
-        },
-        {
-            qz: "如果一个 SFS 网络中的代币分布极其集中，会？",
-            qe: "If token distribution in an SFS network is extremely concentrated?",
-            oz: ["更安全", "存在服务垄断和中心化风险", "更好用", "更便宜"],
-            oe: ["Safer", "Risks of service monopoly and centralization", "Better usability", "Cheaper"],
-            a: 1, ez: "去中心化程度直接影响系统的抗审查性。", ee: "Decentralization directly affects censorship resistance."
-        },
-        {
-            qz: "Rialo 博客建议，代币经济学应该在什么时候设计？",
-            qe: "Rialo's blog suggests when should tokenomics be designed?",
-            oz: ["最后再想", "从项目一开始就与核心业务逻辑深度耦合", "不需要设计", "上线后再改"],
-            oe: ["At the very end", "Deeply coupled with core business logic from the start", "No design needed", "Change after launch"],
-            a: 1, ez: "经济学是协议的灵魂，必须从头规划。", ee: "Economics is the soul of the protocol; must be planned from the start."
-        },
-        {
-            qz: "在 SFS 视角下，区块链的主要功能是？",
-            qe: "From an SFS perspective, what is the primary function of blockchain?",
-            oz: ["存照片", "作为透明、不可篡改的账本执行结算和准入规则", "发推特", "算数学题"],
-            oe: ["Store photos", "Acting as a transparent, immutable ledger executing settlement/access rules", "Tweeting", "Solving math problems"],
-            a: 1, ez: "区块链是信任的机器。", ee: "Blockchain is the trust machine."
-        },
-        {
-            qz: "SFS 能否处理“非法服务”？",
-            qe: "Can SFS handle 'illegal services'?",
-            oz: ["支持", "通过社区治理规则和验证节点进行过滤和惩罚", "无法控制", "自动报警"],
-            oe: ["Supported", "Via community governance rules and validation nodes to filter/punish", "Cannot control", "Auto-report"],
-            a: 1, ez: "去中心化不代表法外之地，需要规则约束。", ee: "Decentralization doesn't mean lawlessness; it needs rules."
-        },
-        {
-            qz: "为什么 SFS 被认为是对“资本资产定价模型”的应用？",
-            qe: "Why is SFS considered an application of 'Capital Asset Pricing Models'?",
-            oz: ["名字好听", "它将代币价格与未来的服务生产能力挂钩", "它是随机的", "它是骗人的"],
-            oe: ["Sounds good", "It links token price to future service production capability", "Random", "Deceptive"],
-            a: 1, ez: "价值来自于生产力。", ee: "Value comes from productivity."
-        },
-        {
-            qz: "最后一道题：Rialo 的 Stake-for-Service 目的是为了创造一个？",
-            qe: "Last question: Rialo's Stake-for-Service aims to create a?",
-            oz: ["赌场", "可持续、低摩擦、高效的全球物理资源网络", "小圈子游戏", "新的交易所"],
-            oe: ["Casino", "Sustainable, low-friction, efficient global physical resource network", "Niche game", "New exchange"],
-            a: 1, ez: "这是 Rialo 的终极使命。", ee: "This is Rialo's ultimate mission."
-        }
-    ];
+  // 60 questions — strictly derived from the Rialo blog post (Stake-for-Service / SfS)
+  const rawData = [
+    // 1–10: Cost problem & friction
+    {
+      qz: "文章开头提到链上系统的“尴尬分裂”主要是指什么？",
+      qe: "What 'awkward split' does the article say blockchains face?",
+      oz: ["隐私与透明的分裂", "性能与去中心化的分裂", "资本（质押）与消耗（支付费用）的分裂", "开发者与用户的分裂"],
+      oe: ["Privacy vs transparency", "Performance vs decentralization", "Capital (staking) vs consumption (paying fees)", "Developers vs users"],
+      a: 2,
+      ez: "用户把代币作为资本去质押赚收益，但仍需单独余额来支付 gas/存储/周期性操作。",
+      ee: "Users stake tokens as capital to earn yield but still need separate balances for gas/storage/recurring ops."
+    },
+    {
+      qz: "文中列举的链上“必要成本”不包括哪一项？",
+      qe: "Which is NOT listed as an essential onchain cost in the article?",
+      oz: ["Gas", "状态租金（state rent）", "吞吐量计量（metered throughput）", "矿机折旧（ASIC depreciation）"],
+      oe: ["Gas", "State rent", "Metered throughput", "ASIC depreciation"],
+      a: 3,
+      ez: "文中提到 gas、state rent、metered throughput 用于防 spam/资源耗尽，并未提及矿机折旧。",
+      ee: "The article lists gas/state rent/throughput metering for spam/resource control, not ASIC depreciation."
+    },
+    {
+      qz: "为什么这些成本会造成“摩擦（friction）”？",
+      qe: "Why do these costs introduce 'friction'?",
+      oz: ["因为必须使用中心化支付", "因为用户/合约必须维持会波动的余额才能保持运行", "因为必须离线签名", "因为必须先跑 PoW"],
+      oe: ["Because payments must be centralized", "Because users/contracts must maintain volatile balances to stay operational", "Because offline signing is required", "Because PoW must run first"],
+      a: 1,
+      ez: "文章强调“波动的余额（价格与数量都波动）”让长期系统难以稳定运转和预算。",
+      ee: "The post emphasizes volatile balances (price & quantity) make operation and budgeting hard."
+    },
+    {
+      qz: "开发者视角下，这类问题常体现为哪种现象？",
+      qe: "From a developer perspective, what does this problem look like?",
+      oz: ["代码必须每小时重部署", "需要维持 operational float（运营备用金）以防余额耗尽停摆", "必须购买 NFT 才能部署合约", "必须依赖广告收入"],
+      oe: ["Code must redeploy hourly", "Needing operational float to avoid halts when balances run dry", "Must buy an NFT to deploy", "Must rely on ad revenue"],
+      a: 1,
+      ez: "文中把 dapp 需要一小笔原生代币库存在手上称为 operational float，否则余额用尽会停摆。",
+      ee: "The post calls it operational float: a native-token buffer or ops halt when it runs out."
+    },
+    {
+      qz: "文章提到哪些合约/应用最容易被“周期性费用”困扰？",
+      qe: "Which contracts/apps are highlighted as being hurt by recurring fees?",
+      oz: ["一次性铸造合约", "需要定时/订阅式执行的合约", "只读查询合约", "离线冷钱包"],
+      oe: ["One-time mint contracts", "Scheduled or subscription-based contracts", "Read-only query contracts", "Offline cold wallets"],
+      a: 1,
+      ez: "定时/订阅式任务需要不断补能，最容易因为余额耗尽而中断。",
+      ee: "Scheduled/subscription tasks need continual refueling and can stall when balances run dry."
+    },
+    {
+      qz: "文中说这种补能流程对 web2 开发者为何“陌生”？",
+      qe: "Why does the refueling process feel 'foreign' to web2 developers?",
+      oz: ["因为 web2 没有数据库", "因为 web2 习惯于 recurring billing 与 credits 系统", "因为 web2 只能用法币", "因为 web2 不允许订阅"],
+      oe: ["Because web2 has no databases", "Because web2 is used to recurring billing and credit systems", "Because web2 can only use fiat", "Because web2 forbids subscriptions"],
+      a: 1,
+      ez: "文章直接对比 web2 的 recurring billing / credit-based systems。",
+      ee: "The article contrasts web2’s recurring billing and credit-based systems."
+    },
+    {
+      qz: "用户侧的摩擦来自于哪种“时间尺度不匹配”？",
+      qe: "What time-horizon mismatch causes user friction?",
+      oz: ["短期借贷 vs 长期抵押", "长期财富（质押/锁仓）vs 短期流动性（支付费用）", "长期隐私 vs 短期透明", "长期存储 vs 短期计算"],
+      oe: ["Short-term lending vs long-term collateral", "Long-term wealth (staked/locked) vs short-term liquidity (fees)", "Long-term privacy vs short-term transparency", "Long-term storage vs short-term compute"],
+      a: 1,
+      ez: "用户可能有长期资本在生息，但它不能直接支付日常费用，导致不断 rebalance/top-up。",
+      ee: "Users may have long-term yield-bearing capital that can’t directly fund ongoing fees → rebalancing/top-ups."
+    },
+    {
+      qz: "文章认为链上系统需要一种机制来“桥接”什么？",
+      qe: "The article says onchain systems need a mechanism to bridge what?",
+      oz: ["L1 与 L2", "长周期资本与短周期费用（时间尺度）", "匿名与实名", "编译与运行"],
+      oe: ["L1 and L2", "Long-horizon capital and short-horizon fees (time horizons)", "Anonymous vs real-name", "Compile vs runtime"],
+      a: 1,
+      ez: "核心诉求是让长期资本产生的收益能稳定供给短期消耗。",
+      ee: "The key is letting long-term capital’s yield reliably fund short-term consumption."
+    },
+    {
+      qz: "文中指出底层网络已经具备什么能力，但“流向”不理想？",
+      qe: "What capability do networks already have, but the flow is 'one-directional'?",
+      oz: ["压缩区块", "在可预测间隔 mint 并分发奖励", "自动 KYC", "自动锁定汇率"],
+      oe: ["Block compression", "Minting and distributing rewards at predictable intervals", "Automatic KYC", "Automatic FX locking"],
+      a: 1,
+      ez: "问题不在于能不能发奖励，而是奖励只回到 staker 钱包，不会自动回流支持生产性活动。",
+      ee: "The issue isn’t issuance itself but that rewards flow back to wallets and don’t automatically re-enter productive activity."
+    },
+    {
+      qz: "文中把“奖励只回钱包、不回流经济体”的现状称为哪类问题？",
+      qe: "What is the issue with rewards flowing only back to the staker’s wallet?",
+      oz: ["奖励缺乏可预测性", "奖励没有自动重新进入经济体用于生产性活动", "奖励无法兑换", "奖励会被强制销毁"],
+      oe: ["Rewards are unpredictable", "Rewards don’t automatically re-enter the economy for productive activity", "Rewards are non-redeemable", "Rewards are forcibly burned"],
+      a: 1,
+      ez: "文章明确说 rewards 目前只单向流回钱包，并不自动资助 productive activity。",
+      ee: "The post explicitly says rewards flow one way back to wallets instead of funding productive activity."
+    },
 
-    function toggleLang() { currentLang = (currentLang === 'zh' ? 'en' : 'zh'); render(); }
-    
-    function render() {
-        const s = rawData[current];
-        document.getElementById('ui-title').innerText = currentLang === 'zh' ? "Rialo SFS 经济模型深度考核" : "Rialo SFS Economics Master Quiz";
-        document.getElementById('current-idx').innerText = current + 1;
-        document.getElementById('progress-fill').style.width = ((current + 1) / 60 * 100) + '%';
-        document.getElementById('question-text').innerText = (currentLang === 'zh' ? s.qz : s.qe);
-        document.getElementById('score-counter').innerText = (currentLang === 'zh' ? `得分: ${score}` : `Score: ${score}`);
+    // 11–20: Concept & credits
+    {
+      qz: "Stake-for-Service（SfS）在文中被定义为 Rialo 协议中的什么？",
+      qe: "What is Stake-for-Service (SfS) defined as in the protocol?",
+      oz: ["一个 AMM 池", "一种独特的 position type（头寸类型）", "一种新的共识算法", "一种 NFT 标准"],
+      oe: ["An AMM pool", "A unique position type", "A new consensus algorithm", "An NFT standard"],
+      a: 1,
+      ez: "文章将 SfS 描述为一种 position type，用于让 staking rewards 流向 service payments。",
+      ee: "SfS is described as a position type that routes staking rewards into service payments."
+    },
+    {
+      qz: "创建 SfS 头寸时必须指定的关键参数是什么？",
+      qe: "What key parameter must be specified when creating an SfS position?",
+      oz: ["杠杆倍数", "routing fraction（路由比例）", "区块大小", "私钥阈值"],
+      oe: ["Leverage ratio", "Routing fraction", "Block size", "Private key threshold"],
+      a: 1,
+      ez: "routing fraction 表示未来奖励中有多少比例被导向服务支付。",
+      ee: "Routing fraction specifies what percentage of future rewards is directed toward service payments."
+    },
+    {
+      qz: "被路由出来的奖励会先进入哪里？",
+      qe: "Where do the routed rewards go first?",
+      oz: ["用户账户", "交易所", "ServicePaymaster（SPM）", "销毁地址"],
+      oe: ["User account", "An exchange", "ServicePaymaster (SPM)", "A burn address"],
+      a: 2,
+      ez: "文章强调奖励不经过用户账户，而是直接进入 SPM。",
+      ee: "The article stresses rewards bypass user custody and go directly to the SPM."
+    },
+    {
+      qz: "SPM 收到奖励后会做什么？",
+      qe: "What does the SPM do upon receiving the rewards?",
+      oz: ["提高 gas 费", "铸造等量 service credits，并保持 1:1 backing", "将奖励空投给所有用户", "冻结奖励"],
+      oe: ["Raise gas fees", "Mint equivalent service credits with 1:1 backing", "Airdrop to all users", "Freeze rewards"],
+      a: 1,
+      ez: "SPM 将奖励转换为 credits，且保持对未来 RLO payout 的 1:1 支撑。",
+      ee: "The SPM converts rewards into credits with a 1:1 backing against future RLO payouts."
+    },
+    {
+      qz: "这些 service credits 在 Rialo 生态中主要用于支付什么？",
+      qe: "What can service credits be spent on in the Rialo ecosystem?",
+      oz: ["交易所上币费", "gas、存储、scheduled executions", "NFT 版税", "链下工资"],
+      oe: ["Exchange listing fees", "Gas, storage, scheduled executions", "NFT royalties", "Offchain salaries"],
+      a: 1,
+      ez: "文中把 credits 定位为可编程代金券，用于 gas/storage/scheduled executions。",
+      ee: "Credits are programmable vouchers for gas/storage/scheduled executions."
+    },
+    {
+      qz: "文章用哪个类比来帮助理解 credits 的体验？",
+      qe: "Which analogy does the article use to explain credits?",
+      oz: ["股票分红", "航空里程/信用卡积分", "停车券", "游戏点卡（可交易）"],
+      oe: ["Stock dividends", "Airline miles / credit-card rewards", "Parking tickets", "Tradable game cards"],
+      a: 1,
+      ez: "文章明确说它类似 airline miles / credit-card reward system：以物抵扣服务。",
+      ee: "It explicitly compares it to airline miles / credit-card rewards: in-kind credits for services."
+    },
+    {
+      qz: "credits 在用户层面“行为不同”的关键点是什么？",
+      qe: "What key property makes credits behave differently at the user level?",
+      oz: ["可跨链无限转移", "在服务语境外不可转让、不可投机", "必须每天清零", "只能由验证者持有"],
+      oe: ["Infinitely transferable cross-chain", "Non-transferable outside service context and non-speculative", "Must reset daily", "Only validators can hold them"],
+      a: 1,
+      ez: "文章强调 credits 仅在服务场景内使用，不能作为投机资产流通。",
+      ee: "The post stresses credits are usable only for services and cannot be transferred/speculated as an asset."
+    },
+    {
+      qz: "SfS 把质押从“被动储蓄”转变为什么？",
+      qe: "SfS turns staking from passive savings into what?",
+      oz: ["一次性捐赠", "主动支付流（active payment stream）", "永恒销毁", "零成本套利"],
+      oe: ["A one-time donation", "An active payment stream", "Permanent burning", "Zero-cost arbitrage"],
+      a: 1,
+      ez: "文章用“active payment stream”描述：收益持续循环为网络供能。",
+      ee: "The post describes it as an active payment stream—yield continuously powers network usage."
+    },
+    {
+      qz: "为何文中说该设计让奖励“更生产性而非抽取性（productive rather than extractive）”？",
+      qe: "Why does the article say this keeps rewards 'productive rather than extractive'?",
+      oz: ["因为奖励会被销毁", "因为奖励被转成可消费服务额度、直接推动网络活动", "因为奖励只给团队", "因为奖励不能提现"],
+      oe: ["Because rewards are burned", "Because rewards become consumable service credits that drive network activity", "Because rewards go only to the team", "Because rewards can’t be withdrawn"],
+      a: 1,
+      ez: "核心是让 yield 不再闲置等待领取，而是持续回流支持实际使用。",
+      ee: "The point is yield doesn’t sit idle waiting to be claimed; it cycles back to fund real usage."
+    },
+    {
+      qz: "文中提出的“预算表达方式”是什么？",
+      qe: "How can users express a service budget in SfS?",
+      oz: ["用固定 gas 价格", "用 yield 的一个比例（routing fraction）", "用交易次数上限", "用手续费折扣码"],
+      oe: ["Fixed gas price", "As a fraction of yield (routing fraction)", "Max transaction count", "Fee discount codes"],
+      a: 1,
+      ez: "用户可将“服务预算”表达为 yield 的比例，并让其长期自动供能。",
+      ee: "Users can express a service budget as a fraction of yield and let it fund activity continuously."
+    },
 
-        const container = document.getElementById('options-container');
-        container.innerHTML = '';
-        (currentLang === 'zh' ? s.oz : s.oe).forEach((opt, i) => {
-            const div = document.createElement('div');
-            div.className = 'option' + (answered ? ' disabled' : '');
-            if (answered && i === s.a) div.classList.add('correct');
-            div.innerHTML = `<b style="margin-right:10px">${String.fromCharCode(65+i)}.</b> ${opt}`;
-            div.onclick = () => select(i, div);
-            container.appendChild(div);
-        });
+    // 21–30: Architecture
+    {
+      qz: "SfS 机制的三大组件不包括哪一个？",
+      qe: "Which is NOT one of the three primary components of SfS?",
+      oz: ["SfS positions", "ServicePaymaster（SPM）", "validator-provider network", "中心化清算银行"],
+      oe: ["SfS positions", "ServicePaymaster (SPM)", "Validator-provider network", "A centralized clearing bank"],
+      a: 3,
+      ez: "文章列出三组件：SfS positions、SPM、validator-provider network。",
+      ee: "The post lists three: SfS positions, the SPM, and the validator-provider network."
+    },
+    {
+      qz: "SfS position 的三个属性分别是？",
+      qe: "What are the three attributes of an SfS position?",
+      oz: ["手续费率、滑点、期限", "principal、validator、routing fraction", "地址、nonce、链ID", "存储、带宽、CPU"],
+      oe: ["Fee rate, slippage, term", "Principal, validator, routing fraction", "Address, nonce, chainId", "Storage, bandwidth, CPU"],
+      a: 1,
+      ez: "文章明确写了：Principal（质押量）、Validator（委托对象）、Routing fraction（路由比例）。",
+      ee: "It explicitly defines: principal, validator (or pool), and routing fraction."
+    },
+    {
+      qz: "文中说每个 epoch 的 reward 主要由什么决定？",
+      qe: "What does the article say rewards per epoch are based on?",
+      oz: ["用户投票数", "validator performance 与 network issuance", "NFT 地板价", "交易所成交量"],
+      oe: ["User votes", "Validator performance and network issuance", "NFT floor price", "Exchange volume"],
+      a: 1,
+      ez: "每个 epoch 的 reward 由验证者表现与网络发行共同决定。",
+      ee: "Rewards are based on validator performance and network issuance."
+    },
+    {
+      qz: "被路由到服务的总 yield 在协议层面如何处理？",
+      qe: "How is total yield directed to services handled at the protocol level?",
+      oz: ["按用户逐笔手动转账", "跨参与者聚合后直接 mint 给 SPM", "先空投再回收", "先锁仓一年"],
+      oe: ["Manual per-user transfers", "Aggregated across participants and minted directly to the SPM", "Airdrop then clawback", "Locked for one year first"],
+      a: 1,
+      ez: "协议聚合所有 SfS 参与者的路由收益，并直接铸给 SPM，绕过用户托管。",
+      ee: "The protocol aggregates routed yield and mints it directly to the SPM, bypassing user custody."
+    },
+    {
+      qz: "路由收益之外，剩余奖励怎么走？",
+      qe: "What happens to the remaining (non-routed) share of rewards?",
+      oz: ["全被销毁", "走标准 vesting 路径回到 staker 账户", "全部给验证者", "进入团队金库"],
+      oe: ["All burned", "Follows the standard vesting path to the staker’s account", "All to validators", "Goes to team treasury"],
+      a: 1,
+      ez: "文章写明：路由部分给 SPM，剩余部分按标准 vesting 回到 staker。",
+      ee: "The post states: routed share goes to SPM; the rest follows standard vesting to the staker."
+    },
+    {
+      qz: "SPM 被称为“accounting hub”的原因是？",
+      qe: "Why is the SPM described as an 'accounting hub'?",
+      oz: ["它负责出块", "它把 routed rewards 转成 credits 并管理结算台账", "它负责隐私证明", "它负责跨链桥"],
+      oe: ["It produces blocks", "It converts routed rewards to credits and manages settlement accounting", "It handles privacy proofs", "It runs the bridge"],
+      a: 1,
+      ez: "SPM 负责 credits 的铸造、余额/消费历史台账与支付闭环授权。",
+      ee: "SPM mints credits, tracks balances/consumption history, and authorizes payouts—closing the payment loop."
+    },
+    {
+      qz: "当交易消耗 credits 时，SPM 会做什么？",
+      qe: "When credits are consumed, what does the SPM do?",
+      oz: ["再铸造更多 credits", "授权向完成工作的一方支付等值 RLO", "把交易回滚", "冻结用户账户"],
+      oe: ["Mint more credits", "Authorize equivalent RLO payout to the party that fulfilled the work", "Revert the tx", "Freeze the user account"],
+      a: 1,
+      ez: "消费 credits → SPM 授权等值 RLO payout 给 validator/service provider。",
+      ee: "Credits consumption triggers SPM authorization of equivalent RLO payouts to validators/providers."
+    },
+    {
+      qz: "文中给出的“支付闭环”步骤顺序正确的是哪一个？",
+      qe: "Which sequence matches the article’s payment loop?",
+      oz: [
+        "用户用 credits 出块 → 质押 → SPM 结算 → 铸造奖励 → 发给验证者",
+        "质押 → 路由 yield 到 SPM → SPM 铸 credits → credits 被消耗 → validator/provider 收到 RLO payout",
+        "铸 credits → 质押 → 消耗 → 路由 → payout",
+        "payout → 消耗 → 铸造 → 质押 → 路由"
+      ],
+      oe: [
+        "Use credits to produce blocks → stake → SPM settles → mint rewards → pay validators",
+        "Stake → route yield to SPM → SPM mints credits → credits are consumed → validators/providers receive RLO payouts",
+        "Mint credits → stake → consume → route → payout",
+        "Payout → consume → mint → stake → route"
+      ],
+      a: 1,
+      ez: "文章按 1~5 列出闭环：stake→yield→SPM→credits→consumption→payout。",
+      ee: "The article lists the loop steps 1–5: stake → routed yield → SPM mints credits → consumption → payouts."
+    },
+    {
+      qz: "文中说该架构保留了什么“本该存在的分配结果”？",
+      qe: "What does the article say the architecture preserves?",
+      oz: ["团队对收益的控制权", "如果用户手动用 RLO 付费时应有的 reward distribution", "交易所的手续费分配", "跨链桥的收益分配"],
+      oe: ["Team control over rewards", "The reward distribution that would exist if users manually paid with RLO", "Exchange fee distribution", "Bridge revenue distribution"],
+      a: 1,
+      ez: "它改变的是“可编程、可预测的支付方式”，不是改变应得的收入分配结构。",
+      ee: "It changes programmability/predictability, not who should get paid versus manual RLO payments."
+    },
+    {
+      qz: "SfS 在“机制层面”的新增价值最贴近哪两个词？",
+      qe: "The added value of SfS is best captured by which two words?",
+      oz: ["匿名与隐私", "可编程性与可预测性", "中心化与审计", "更高通胀与更高波动"],
+      oe: ["Anonymity and privacy", "Programmability and predictability", "Centralization and auditing", "Higher inflation and volatility"],
+      a: 1,
+      ez: "文章明确说它引入了 programmability 和 predictability。",
+      ee: "The post explicitly says it introduces programmability and predictability."
+    },
 
-        if (answered) {
-            const fb = document.getElementById('feedback');
-            fb.style.display = 'block';
-            fb.innerHTML = `<strong>Note:</strong> ${currentLang === 'zh' ? s.ez : s.ee}`;
-            document.getElementById('next-btn').style.display = 'block';
-        }
+    // 31–40: Continuous flow, accounting, integration
+    {
+      qz: "SPM 的内部账本主要跟踪什么？",
+      qe: "What does the SPM’s internal ledger track?",
+      oz: ["节点硬件型号", "每个用户的 credits 余额与消费历史", "NFT 元数据", "私钥备份"],
+      oe: ["Node hardware types", "Each user’s credit balance and consumption history", "NFT metadata", "Private key backups"],
+      a: 1,
+      ez: "文中写明 SPM 维护 outstanding credit balance 与 consumption history。",
+      ee: "The post states SPM tracks outstanding credit balances and consumption history."
+    },
+    {
+      qz: "为什么文中说 credits 的供给会“可预测地刷新”？",
+      qe: "Why does the article say credit supply refreshes predictably?",
+      oz: ["因为每天固定空投", "因为 staking rewards 是 epoch-based", "因为价格锚定美元", "因为有中心化做市商"],
+      oe: ["Because of daily airdrops", "Because staking rewards are epoch-based", "Because it’s USD-pegged", "Because of a centralized market maker"],
+      a: 1,
+      ez: "奖励按 epoch 发放，因此 credits 也在可预测间隔补充。",
+      ee: "Rewards accrue by epoch, so credits refresh on predictable intervals."
+    },
+    {
+      qz: "文中给出的“可长期运行”的必要条件是？",
+      qe: "What condition allows a user/contract to operate indefinitely in the article?",
+      oz: ["只要 routing fraction=100%", "只要 yield 覆盖其 spending rate", "只要交易为 0 gas", "只要持有 NFT"],
+      oe: ["Routing fraction must be 100%", "Yield must cover the spending rate", "Transactions must be 0 gas", "Must hold an NFT"],
+      a: 1,
+      ez: "文中说：足够 principal + 合适 routing fraction，只要 yield ≥ 消费速率即可长期运转。",
+      ee: "It says with sufficient principal and routing fraction, you can operate as long as yield covers spend rate."
+    },
+    {
+      qz: "SPM 作为“clearinghouse”的好处之一是？",
+      qe: "One benefit of the SPM acting as a clearinghouse is?",
+      oz: ["让所有费用变成固定费率", "更容易集成新的 payable 类别而无需为每类重做费用机制", "让所有交易匿名", "让出块更快"],
+      oe: ["All fees become fixed", "Easier to add new payable classes without redesigning fee mechanisms each time", "All transactions become anonymous", "Faster block production"],
+      a: 1,
+      ez: "文中举例新 payables：oracle updates、scheduled tasks、offchain compute proofs。",
+      ee: "It cites adding payables like oracle updates, scheduled tasks, and offchain compute proofs."
+    },
+    {
+      qz: "文中说 SfS 不是独立功能，而是扩展了 Rialo 的什么总体思路？",
+      qe: "SfS is not standalone; it extends Rialo’s broader approach to what?",
+      oz: ["营销与增长", "资本形成与服务消耗的对齐", "隐私与合规", "跨链桥聚合"],
+      oe: ["Marketing and growth", "Aligning capital formation with service consumption", "Privacy and compliance", "Bridge aggregation"],
+      a: 1,
+      ez: "SfS 通过把 yield 变成服务预算，把资本与使用对齐。",
+      ee: "SfS aligns capital and usage by turning yield into a service budget."
+    },
+    {
+      qz: "文章提到应用已经与什么交互以实现 gas abstraction？",
+      qe: "The article notes apps already interact with what for gas abstraction?",
+      oz: ["桥接合约", "paymasters", "预言机", "中心化托管账户"],
+      oe: ["Bridge contracts", "Paymasters", "Oracles", "Centralized custodial accounts"],
+      a: 1,
+      ez: "文中指出应用已与 paymasters 交互以做 gas abstraction，而 SfS 把它嵌入 staking flow。",
+      ee: "It says apps already interact with paymasters; SfS embeds this into staking flows."
+    },
+    {
+      qz: "传统系统里“安全 vs 实用性”的权衡是什么？",
+      qe: "What is the traditional trade-off between security and utility?",
+      oz: ["更多质押=更低安全", "更多质押提高安全，但减少可用于费用/使用的流动性", "更多流动性=更低吞吐", "更多 DeFi=更低安全"],
+      oe: ["More staking = less security", "More staking increases security but reduces liquid tokens for fees/utility", "More liquidity = lower throughput", "More DeFi = less security"],
+      a: 1,
+      ez: "文章说传统系统里 staking 锁定 tokens，导致安全与效用竞争同一份流动性。",
+      ee: "It states staking locks tokens, creating a security-vs-utility liquidity trade-off."
+    },
+    {
+      qz: "Rialo 通过 SfS 声称如何让安全与效用“同时扩张”？",
+      qe: "How does Rialo claim SfS lets security and utility scale together?",
+      oz: ["通过取消质押", "本金继续质押保安全，而 yield 资助持续使用", "通过提高通胀到 100%", "通过强制所有人交易"],
+      oe: ["By removing staking", "Principal secures the network while yield funds ongoing activity", "By raising inflation to 100%", "By forcing everyone to transact"],
+      a: 1,
+      ez: "关键是：staked capital 负责安全，yield 负责支付活动成本。",
+      ee: "Key idea: staked principal provides security; yield pays for usage."
+    },
+    {
+      qz: "文中对“yield 应该怎么做”的主张最贴近哪句话？",
+      qe: "Which statement best matches the article’s view of yield?",
+      oz: ["yield 只应堆在钱包里", "yield 不仅要积累，还应循环（accumulate and circulate）", "yield 必须被销毁", "yield 应该完全变成法币"],
+      oe: ["Yield should only accumulate in wallets", "Yield should not only accumulate but also circulate", "Yield must be burned", "Yield should fully become fiat"],
+      a: 1,
+      ez: "文章直接说：Yield should not only accumulate but also circulate。",
+      ee: "It directly states yield should not only accumulate but also circulate."
+    },
+    {
+      qz: "文中说 SfS 形成了哪种“闭环关系”？",
+      qe: "What closed-loop relationship does SfS create?",
+      oz: ["短期投机与长期抛售", "长期资本与短期消耗之间的闭环", "隐私与监管之间的闭环", "中心化与去中心化之间的闭环"],
+      oe: ["Short-term speculation and long-term dumping", "A closed loop between long-term capital and short-term consumption", "A loop between privacy and regulation", "A loop between centralization and decentralization"],
+      a: 1,
+      ez: "SfS 把 staking yield 直接变成服务预算，连接长期资本与短期费用。",
+      ee: "SfS turns staking yield into service budget, linking long-term capital with short-term fees."
+    },
+
+    // 41–50: Double marginalization, onboarding, recurring, NFTs
+    {
+      qz: "文中把“多余额维护 + 反复补能”的开销称为一种什么？",
+      qe: "The article calls the overhead of maintaining multiple balances and refilling them what?",
+      oz: ["沉没成本", "double marginalization", "机会成本", "逆向选择"],
+      oe: ["Sunk cost", "Double marginalization", "Opportunity cost", "Adverse selection"],
+      a: 1,
+      ez: "文中提到：链上 gas 与链下自动化网络费用各自要资金，形成重复“加价/维护”负担。",
+      ee: "It mentions both onchain gas and offchain automation fees needing separate funding—an instance of double marginalization."
+    },
+    {
+      qz: "Rialo 在“调度（scheduling）”方面的关键不同点是什么？",
+      qe: "What is Rialo’s key difference regarding scheduling?",
+      oz: ["调度只能链下完成", "Scheduling 是协议的原生 onchain 功能", "调度只支持 NFT", "调度依赖中心化服务器"],
+      oe: ["Scheduling is only offchain", "Scheduling is a native onchain protocol feature", "Scheduling supports only NFTs", "Scheduling relies on centralized servers"],
+      a: 1,
+      ez: "文章指出 scheduling 是原生能力，SfS 进一步让调度费用也能由 yield 链上供给。",
+      ee: "It says scheduling is native, and SfS lets scheduled execution payments be funded onchain from yield."
+    },
+    {
+      qz: "为什么说 SfS 对“调度/订阅式合约”是结构性优势？",
+      qe: "Why is SfS a structural advantage for scheduled/subscription contracts?",
+      oz: ["因为它让合约免审计", "因为合约可用单一、集成的链上资金机制长期供能", "因为它让 gas 永远为 0", "因为它让合约不需要状态"],
+      oe: ["Because it removes audits", "Because a contract can sustain recurring activity via one integrated onchain funding mechanism", "Because gas is always 0", "Because contracts need no state"],
+      a: 1,
+      ez: "文章强调：不再维护多种余额与反复 refill，而是用一个集成机制长期供能。",
+      ee: "It emphasizes avoiding multiple balances & refills by using one integrated onchain funding mechanism."
+    },
+    {
+      qz: "在 gasless onboarding 场景里，谁可以替新用户 stake RLO？",
+      qe: "In gasless onboarding, who can stake RLO on behalf of new users?",
+      oz: ["只能协议团队", "钱包或应用（wallets or applications）", "只能交易所", "只能验证者"],
+      oe: ["Only the core team", "Wallets or applications", "Only exchanges", "Only validators"],
+      a: 1,
+      ez: "文中明确写：wallets or applications can stake RLO on behalf of users。",
+      ee: "It explicitly says wallets or applications can stake on behalf of users."
+    },
+    {
+      qz: "gasless onboarding 的关键并不是“消除费用”，而是？",
+      qe: "The key of gasless onboarding is NOT eliminating fees, but…",
+      oz: ["把费用转嫁给验证者", "用可持续来源（yield）预付费用，同时保留验证者收入", "强行补贴到无限", "把费用改成广告"],
+      oe: ["Passing fees to validators", "Pre-paying fees from sustainable yield while preserving validator revenue", "Subsidizing infinitely", "Replacing fees with ads"],
+      a: 1,
+      ez: "文章说：不是消除 fees，而是用 yield 预付（pre-pay）且仍保留 validator revenue。",
+      ee: "It states fees aren’t eliminated; they’re pre-paid from yield while validator revenue is preserved."
+    },
+    {
+      qz: "文中说新用户常在什么时候遇到第一笔交易费用？",
+      qe: "When do new users often encounter their first transaction fee?",
+      oz: ["理解代币机制之后", "甚至在理解如何获取代币之前", "完成 KYC 之后", "只在提现时"],
+      oe: ["After understanding token mechanics", "Before they even understand how to acquire tokens", "After KYC", "Only at withdrawal"],
+      a: 1,
+      ez: "原文强调：first fee comes before they even understand how to acquire tokens。",
+      ee: "It emphasizes users face fees before they even know how to acquire tokens."
+    },
+    {
+      qz: "文中举的“定时/订阅式合约”例子不包括哪一个？",
+      qe: "Which is NOT one of the recurring-contract examples given?",
+      oz: ["自动化 swaps", "vault rebalances", "治理任务（governance tasks）", "挖矿算力租赁（hashrate leasing）"],
+      oe: ["Automated swaps", "Vault rebalances", "Governance tasks", "Hashrate leasing"],
+      a: 3,
+      ez: "文章列的是 swaps、vault rebalances、governance tasks，并未提 hashrate leasing。",
+      ee: "The post lists swaps, vault rebalances, and governance tasks—no hashrate leasing."
+    },
+    {
+      qz: "为何这些长期合约能“高置信度”估算预算？",
+      qe: "Why can long-lived contracts estimate budgets with high confidence?",
+      oz: ["因为价格永远不变", "因为 staking rewards 以可预测方式累积（accrue predictably）", "因为没有攻击风险", "因为 fees 被取消"],
+      oe: ["Because prices never change", "Because staking rewards accrue predictably", "Because there’s no attack risk", "Because fees are removed"],
+      a: 1,
+      ez: "文章强调 rewards 的可预测性，使得可对运营预算进行估算。",
+      ee: "It highlights predictable reward accrual, enabling confident operating budget estimates."
+    },
+    {
+      qz: "文中将“自供能合约”概括为哪种部署方式？",
+      qe: "How does the article describe deploying a self-funding contract/service?",
+      oz: ["部署后靠手动 top-up", "部署后 endow it with a stake，让其自主运行多年", "部署后必须每周升级", "部署后必须连接交易所 API"],
+      oe: ["Deploy then manual top-ups", "Deploy and endow it with a stake to run autonomously for years", "Deploy then upgrade weekly", "Deploy then connect an exchange API"],
+      a: 1,
+      ez: "文中写：deploy a service, endow it with a stake, sustain autonomously for years。",
+      ee: "It says: deploy a service, endow it with a stake, and sustain it autonomously for years."
+    },
+    {
+      qz: "动态 NFT 的例子里，合约在铸造时会做什么以实现“从一开始就被资助”？",
+      qe: "In the dynamic NFT example, what happens during minting to fund it 'from the start'?",
+      oz: ["把 NFT 销毁", "将一部分 proceeds 导向 SfS 账户", "强制用户质押", "把元数据写死"],
+      oe: ["Burn the NFT", "Direct a portion of proceeds to an SfS account", "Force users to stake", "Hardcode metadata"],
+      a: 1,
+      ez: "文章说：during minting, direct a proportion of proceeds to an SfS account → rewards cover updates in perpetuity。",
+      ee: "It says: during minting, direct a portion of proceeds to an SfS account so rewards fund updates in perpetuity."
+    },
+
+    // 51–60: Bulk sponsorship, utility, predictability, policy, rationale, future, conclusion
+    {
+      qz: "批量赞助场景中，文章举的例子是哪类机构？",
+      qe: "In bulk sponsorship, what institution example does the article give?",
+      oz: ["银行", "交易所（exchange）", "电信运营商", "硬件工厂"],
+      oe: ["A bank", "An exchange", "A telecom operator", "A hardware factory"],
+      a: 1,
+      ez: "文中例子：an exchange could stake RLO to cover gas for many daily traders。",
+      ee: "Example: an exchange stakes RLO and routes yield to cover gas for many daily traders."
+    },
+    {
+      qz: "文中提到该交易所可以为多少“每日交易者”覆盖 gas？",
+      qe: "How many 'daily traders' does the article mention in the exchange example?",
+      oz: ["一百人", "一千人", "一万人（ten thousand）", "一百万人"],
+      oe: ["One hundred", "One thousand", "Ten thousand", "One million"],
+      a: 2,
+      ez: "原文是“ten thousand daily traders”。",
+      ee: "The post states “ten thousand daily traders.”"
+    },
+    {
+      qz: "为什么说批量赞助的成本“可预测且有上限”？",
+      qe: "Why is bulk sponsorship cost 'predictable and capped'?",
+      oz: ["因为 fees 永远为 0", "因为成本由 routing fraction 决定并形成上限", "因为团队会退款", "因为价格锚定黄金"],
+      oe: ["Because fees are always 0", "Because routing fraction determines and caps the cost", "Because the team refunds", "Because price is pegged to gold"],
+      a: 1,
+      ez: "文章明确说：cost is predictable and capped by the routing fraction。",
+      ee: "It explicitly says: cost is predictable and capped by the routing fraction."
+    },
+    {
+      qz: "文中说 bulk sponsorship 取代了什么类型的系统？",
+      qe: "The article says bulk sponsorship replaces what kind of systems?",
+      oz: ["链上治理", "临时的 rebate/reward（返利/奖励）系统", "隐私系统", "跨链桥"],
+      oe: ["Onchain governance", "Ad hoc rebate or reward systems", "Privacy systems", "Bridges"],
+      a: 1,
+      ez: "文中说它用协议级原语替代了 ad hoc rebates/rewards。",
+      ee: "It says it replaces ad hoc rebates/rewards with a protocol-level primitive."
+    },
+    {
+      qz: "SfS 如何增加 RLO 的“内生用途（intrinsic utility）”？",
+      qe: "How does SfS increase RLO’s intrinsic utility?",
+      oz: ["让 RLO 只能投机", "让 RLO 既是生息资产又是服务预算（consumable budget）", "让 RLO 只能当治理票", "让 RLO 变成 NFT"],
+      oe: ["Make RLO purely speculative", "Make RLO both yield-bearing and a consumable service budget", "Make RLO only governance votes", "Turn RLO into NFTs"],
+      a: 1,
+      ez: "文中说：RLO 不仅 yield-bearing，还可作为网络服务的 consumable budget。",
+      ee: "It states: RLO becomes not only yield-bearing but also a consumable budget for services."
+    },
+    {
+      qz: "文章认为在大多数 staking 系统里，代币价值通常主要由什么决定？",
+      qe: "In most staking systems, what does the article say token value is determined by?",
+      oz: ["手续费折扣", "yield expectations", "NFT 发行量", "链上投票率"],
+      oe: ["Fee discounts", "Yield expectations", "NFT supply", "Voting turnout"],
+      a: 1,
+      ez: "原文：token value is determined solely by yield expectations（在多数系统里）。",
+      ee: "It states: token value is determined solely by yield expectations in most staking systems."
+    },
+    {
+      qz: "文中说“越多应用集成 SfS → 越大质押需求”的原因是？",
+      qe: "Why does the article say more SfS integration increases staking demand?",
+      oz: ["因为集成会销毁代币", "因为 staking 直接转化为可用吞吐/服务预算（usable throughput）", "因为团队强制要求", "因为会减少区块时间"],
+      oe: ["Because integration burns tokens", "Because staking directly translates into usable throughput/service budget", "Because the team mandates it", "Because block time decreases"],
+      a: 1,
+      ez: "文中说：staking directly translates into usable throughput（通过 credits 支付服务）。",
+      ee: "It says: staking directly translates into usable throughput (via credits funding services)."
+    },
+    {
+      qz: "“Programmatic predictability” 对治理/金库的关键含义是？",
+      qe: "What is the key implication of 'programmatic predictability' for governance/treasuries?",
+      oz: ["保证币价上涨", "可固定 routing fraction 获得稳定 credits 预算，从而简化建模与治理预算", "消除所有风险", "不需要链上透明度"],
+      oe: ["Guarantee price goes up", "Fix routing fraction to get a steady credits budget, simplifying modeling and budgeting", "Remove all risk", "No need for onchain transparency"],
+      a: 1,
+      ez: "文中说 reward rate 与 routing 参数透明，cost modeling becomes straightforward；并举 DAO 分配 10% rewards 的例子。",
+      ee: "It says transparent reward rate & routing make cost modeling straightforward; gives a DAO allocating 10% rewards example."
+    },
+    {
+      qz: "文章把 SfS 作为宏观工具时，核心提出了什么新可能？",
+      qe: "As a macro tool, what new possibility does the article introduce?",
+      oz: ["无限增发刺激", "direct, bounded demand stimulus（直接且有界的需求刺激）", "强制减产", "固定利率借贷"],
+      oe: ["Unlimited inflation stimulus", "Direct, bounded demand stimulus", "Forced output cuts", "Fixed-rate lending"],
+      a: 1,
+      ez: "原文：SfS introduces a new possibility: direct, bounded demand stimulus。",
+      ee: "It states: SfS introduces a new possibility—direct, bounded demand stimulus."
+    },
+    {
+      qz: "“Stimulus parameter” 的做法在文中被描述为：",
+      qe: "The 'stimulus parameter' is described as:",
+      oz: ["额外印更多 token", "把计划减少的发行中的一部分重定向为 service credits（总供应不变）", "提高交易税", "冻结质押"],
+      oe: ["Printing extra tokens", "Redirecting a fraction of reduced issuance into service credits (total supply unchanged)", "Raising transaction taxes", "Freezing staking"],
+      a: 1,
+      ez: "文中强调：不是多印，而是把 foregone issuance 的一部分导入 SPM 变成 credits，总供应不变。",
+      ee: "It stresses: not printing more—redirect part of foregone issuance into the SPM as credits; total supply unchanged."
+    },
+    {
+      qz: "文章说当网络“减少发行”时，可能出现什么副作用？",
+      qe: "What side effect can occur when a network reduces issuance, per the article?",
+      oz: ["吞吐立刻翻倍", "新流动性流入变慢，收益降低，链上活动可能逐步下降", "验证者奖励立刻归零", "所有 fees 被取消"],
+      oe: ["Throughput instantly doubles", "Slower liquidity inflow, lower yields, and a gradual decline in onchain activity", "Validator rewards drop to zero instantly", "All fees are removed"],
+      a: 1,
+      ez: "文中解释：减发稳定长期价值，但会减少流动性与 periodic income，可能抑制活动。",
+      ee: "It explains reduced issuance stabilizes long-term value but can reduce liquidity/periodic income and suppress activity."
+    },
+    {
+      qz: "文中为什么说 credits 的刺激不会造成“外部通胀”？",
+      qe: "Why doesn’t the credits-based stimulus cause 'external inflation'?",
+      oz: ["因为 credits 会自动销毁", "因为 credits 只能在网络内花，提升效用但不外溢到外部通胀", "因为 credits 可自由交易", "因为团队回购"],
+      oe: ["Because credits auto-burn", "Because credits can only be spent within the network, boosting utility without external inflation", "Because credits are freely tradable", "Because the team buys back"],
+      a: 1,
+      ez: "原文：credits can only be spent within the network → increase utility without causing external inflation。",
+      ee: "It states: credits are spendable only within the network, increasing utility without external inflation."
+    },
+    {
+      qz: "文章用哪种“反馈回路”来概括 stimulus 的动态调节？",
+      qe: "What feedback-loop framing does the article use for stimulus dynamics?",
+      oz: ["正反馈：越热越加码", "thermostatic feedback loop：冷却则 credits 流入，升温则参数收缩", "随机漫步", "固定不变"],
+      oe: ["Positive feedback: hotter → more stimulus", "Thermostatic feedback loop: cool → credits flow in; hot → parameter contracts", "Random walk", "Fixed forever"],
+      a: 1,
+      ez: "原文：acts as a thermostatic feedback loop；activity cools → credits flow in；heats up → parameter contracts。",
+      ee: "It says it acts as a thermostatic feedback loop: cool → credits in; hot → parameter contracts."
+    },
+    {
+      qz: "文章说 SPM 能“定向刺激”的前提是什么？",
+      qe: "What enables selective (targeted) stimulus according to the article?",
+      oz: ["SPM 区分不同链上活动类别", "SPM 能读取用户私钥", "SPM 能控制币价", "SPM 能审查所有交易"],
+      oe: ["SPM distinguishes categories of onchain activity", "SPM can read user private keys", "SPM can control token price", "SPM can censor all transactions"],
+      a: 0,
+      ez: "文中说：SPM distinguishes between categories of onchain activity，因此可对 oracle/automation/RWA 等定向。",
+      ee: "It says SPM distinguishes activity categories, enabling targeting (oracle updates, automation, RWA settlements, etc.)."
+    },
+    {
+      qz: "文章从系统论角度说 SfS 引入了什么，从而提升稳定性？",
+      qe: "From a systems-theoretic perspective, what does SfS introduce to improve stability?",
+      oz: ["更多正反馈循环", "负反馈（negative feedback）来替代过去只有正循环的状态", "绝对静止", "强制销毁所有奖励"],
+      oe: ["More positive feedback loops", "Negative feedback replacing prior positive-only loops", "Absolute stasis", "Forced burning of all rewards"],
+      a: 1,
+      ez: "原文：SfS introduces negative feedback where cryptoeconomics previously had only positive loops。",
+      ee: "It states SfS introduces negative feedback where there were previously only positive loops."
+    },
+    {
+      qz: "文章列出的未来方向里，“Composable paymasters”指的是什么？",
+      qe: "In the future directions, what does 'Composable paymasters' refer to?",
+      oz: ["把 paymaster 变成 NFT", "其他链/rollup 集成 Rialo 的 SPM 作为共享服务层，用 yield 支付跨网络费用", "把 paymaster 中心化外包", "只允许单链使用"],
+      oe: ["Turning paymasters into NFTs", "Other chains/rollups integrating Rialo’s SPM as a shared layer to pay cross-network fees via yield", "Outsourcing paymasters centrally", "Single-chain only"],
+      a: 1,
+      ez: "文中说：other chains/rollups could integrate Rialo’s SPM, letting users pay cross-network fees through yield。",
+      ee: "It says other chains/rollups could integrate Rialo’s SPM so users pay cross-network fees via yield."
+    },
+    {
+      qz: "文章结尾的愿景里，SfS 让“投资者与用户”的界线如何变化？",
+      qe: "In the conclusion, how does SfS change the line between investors and users?",
+      oz: ["界线更清晰", "界线被弱化：每个 staker 也成为推动网络活力的贡献者", "界线转移到交易所", "界线由 KYC 决定"],
+      oe: ["The line becomes clearer", "The line dissolves: every staker becomes a contributor to network vitality", "The line moves to exchanges", "The line is determined by KYC"],
+      a: 1,
+      ez: "原文：SfS dissolves the line between investors and users；every staker contributes to network vitality。",
+      ee: "It says SfS dissolves the line between investors and users; every staker contributes to network vitality."
     }
+  ];
 
-    function select(idx, el) {
-        if (answered) return;
-        answered = true;
-        if (idx === rawData[current].a) score++;
-        else el.classList.add('wrong');
-        render();
-    }
+  const total = rawData.length;
 
-    function nextQuestion() {
-        current++;
-        answered = false;
-        document.getElementById('feedback').style.display = 'none';
-        document.getElementById('next-btn').style.display = 'none';
-        if (current < 60) render();
-        else showResult();
-    }
-
-    function showResult() {
-        document.getElementById('quiz-box').style.display = 'none';
-        document.getElementById('result-box').style.display = 'block';
-        const finalP = Math.round(score / 60 * 100);
-        document.getElementById('final-score').innerText = finalP + '%';
-        document.getElementById('ui-res-title').innerText = currentLang === 'zh' ? "评测完成！" : "Quiz Completed!";
-        document.getElementById('ui-retry-btn').innerText = currentLang === 'zh' ? "重新挑战" : "Restart";
-        
-        let msg = "";
-        if (finalP === 100) msg = "Perfect! You are a master of DePIN economics.";
-        else if (finalP >= 80) msg = "Great job! Deep understanding confirmed.";
-        else msg = "Good effort. Suggest re-reading the Rialo blog.";
-        document.getElementById('score-comment').innerText = msg;
-    }
-
+  function toggleLang() {
+    currentLang = (currentLang === 'zh' ? 'en' : 'zh');
     render();
+  }
+
+  function render() {
+    const s = rawData[current];
+    document.getElementById('ui-title').innerText = currentLang === 'zh'
+      ? "Rialo SfS 经济模型深度考核（严格基于博客）"
+      : "Rialo SfS Economics Master Quiz (Strictly Blog-Based)";
+    document.getElementById('ui-subtitle').innerText = currentLang === 'zh'
+      ? "仅基于文章：Stake for Service: A Better Way to Pay on Rialo"
+      : "Based only on: “Stake for Service: A Better Way to Pay on Rialo”";
+
+    document.getElementById('total-qs').innerText = total;
+    document.getElementById('current-idx').innerText = current + 1;
+    document.getElementById('progress-fill').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('question-text').innerText = (currentLang === 'zh' ? s.qz : s.qe);
+    document.getElementById('score-counter').innerText = (currentLang === 'zh' ? `得分: ${score}` : `Score: ${score}`);
+
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    (currentLang === 'zh' ? s.oz : s.oe).forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className = 'option' + (answered ? ' disabled' : '');
+      if (answered && i === s.a) div.classList.add('correct');
+      div.innerHTML = `<b style="margin-right:10px">${String.fromCharCode(65+i)}.</b> ${opt}`;
+      div.onclick = () => select(i, div);
+      container.appendChild(div);
+    });
+
+    if (answered) {
+      const fb = document.getElementById('feedback');
+      fb.style.display = 'block';
+      fb.innerHTML = `<strong>Note:</strong> ${currentLang === 'zh' ? s.ez : s.ee}`;
+      document.getElementById('next-btn').style.display = 'block';
+    }
+  }
+
+  function select(idx, el) {
+    if (answered) return;
+    answered = true;
+
+    if (idx === rawData[current].a) {
+      score++;
+    } else {
+      el.classList.add('wrong');
+    }
+    render();
+  }
+
+  function nextQuestion() {
+    current++;
+    answered = false;
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    if (current < total) render();
+    else showResult();
+  }
+
+  function showResult() {
+    document.getElementById('quiz-box').style.display = 'none';
+    document.getElementById('result-box').style.display = 'block';
+
+    const finalP = Math.round(score / total * 100);
+    document.getElementById('final-score').innerText = finalP + '%';
+    document.getElementById('ui-res-title').innerText = currentLang === 'zh' ? "评测完成！" : "Quiz Completed!";
+    document.getElementById('ui-retry-btn').innerText = currentLang === 'zh' ? "重新挑战" : "Restart";
+
+    let msg = "";
+    if (finalP === 100) msg = (currentLang === 'zh' ? "满分！你已经把文章吃透了。" : "Perfect! You mastered the article.");
+    else if (finalP >= 80) msg = (currentLang === 'zh' ? "很强！理解很深，少量细节可再复盘。" : "Great job! Deep understanding confirmed.");
+    else if (finalP >= 60) msg = (currentLang === 'zh' ? "还不错：建议重点复习 SPM/credits 与 stimulus parameter 那几段。" : "Good effort: revisit SPM/credits and the stimulus parameter sections.");
+    else msg = (currentLang === 'zh' ? "建议重读文章，再来一遍会进步很快。" : "Suggest re-reading the post and try again.");
+
+    document.getElementById('score-comment').innerText = msg;
+  }
+
+  render();
 </script>
 </body>
 </html>
