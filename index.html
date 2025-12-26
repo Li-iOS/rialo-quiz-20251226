@@ -19,7 +19,7 @@
     .option:hover:not(.disabled) { border-color: var(--primary); background: #fcfcff; }
     .option.correct { background: var(--success) !important; color: white; border-color: var(--success); }
     .option.wrong { background: var(--error) !important; color: white; border-color: var(--error); }
-    .option.disabled { cursor: not-allowed; opacity: 0.8; }
+    .option.disabled { cursor: not-allowed; opacity: 0.85; }
     .feedback { margin-top: 25px; padding: 20px; border-radius: 12px; display: none; background: #f8f9fa; border-left: 6px solid var(--primary); font-size: 0.95rem; }
     .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
     .btn { padding: 14px 30px; border: none; border-radius: 10px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: none; }
@@ -60,6 +60,7 @@
   let current = 0;
   let score = 0;
   let answered = false;
+  let chosen = null; // ✅ 关键：记录用户选择，避免 render 重绘丢失“选错变红”
 
   // 60 questions — strictly derived from the Rialo blog post (Stake-for-Service / SfS)
   const rawData = [
@@ -387,15 +388,6 @@
       ee: "It cites adding payables like oracle updates, scheduled tasks, and offchain compute proofs."
     },
     {
-      qz: "文中说 SfS 不是独立功能，而是扩展了 Rialo 的什么总体思路？",
-      qe: "SfS is not standalone; it extends Rialo’s broader approach to what?",
-      oz: ["营销与增长", "资本形成与服务消耗的对齐", "隐私与合规", "跨链桥聚合"],
-      oe: ["Marketing and growth", "Aligning capital formation with service consumption", "Privacy and compliance", "Bridge aggregation"],
-      a: 1,
-      ez: "SfS 通过把 yield 变成服务预算，把资本与使用对齐。",
-      ee: "SfS aligns capital and usage by turning yield into a service budget."
-    },
-    {
       qz: "文章提到应用已经与什么交互以实现 gas abstraction？",
       qe: "The article notes apps already interact with what for gas abstraction?",
       oz: ["桥接合约", "paymasters", "预言机", "中心化托管账户"],
@@ -441,7 +433,7 @@
       ee: "SfS turns staking yield into service budget, linking long-term capital with short-term fees."
     },
 
-    // 41–50: Double marginalization, onboarding, recurring, NFTs
+    // 41–60: Use cases + policy + future + conclusion (20 items)
     {
       qz: "文中把“多余额维护 + 反复补能”的开销称为一种什么？",
       qe: "The article calls the overhead of maintaining multiple balances and refilling them what?",
@@ -459,15 +451,6 @@
       a: 1,
       ez: "文章指出 scheduling 是原生能力，SfS 进一步让调度费用也能由 yield 链上供给。",
       ee: "It says scheduling is native, and SfS lets scheduled execution payments be funded onchain from yield."
-    },
-    {
-      qz: "为什么说 SfS 对“调度/订阅式合约”是结构性优势？",
-      qe: "Why is SfS a structural advantage for scheduled/subscription contracts?",
-      oz: ["因为它让合约免审计", "因为合约可用单一、集成的链上资金机制长期供能", "因为它让 gas 永远为 0", "因为它让合约不需要状态"],
-      oe: ["Because it removes audits", "Because a contract can sustain recurring activity via one integrated onchain funding mechanism", "Because gas is always 0", "Because contracts need no state"],
-      a: 1,
-      ez: "文章强调：不再维护多种余额与反复 refill，而是用一个集成机制长期供能。",
-      ee: "It emphasizes avoiding multiple balances & refills by using one integrated onchain funding mechanism."
     },
     {
       qz: "在 gasless onboarding 场景里，谁可以替新用户 stake RLO？",
@@ -506,24 +489,6 @@
       ee: "The post lists swaps, vault rebalances, and governance tasks—no hashrate leasing."
     },
     {
-      qz: "为何这些长期合约能“高置信度”估算预算？",
-      qe: "Why can long-lived contracts estimate budgets with high confidence?",
-      oz: ["因为价格永远不变", "因为 staking rewards 以可预测方式累积（accrue predictably）", "因为没有攻击风险", "因为 fees 被取消"],
-      oe: ["Because prices never change", "Because staking rewards accrue predictably", "Because there’s no attack risk", "Because fees are removed"],
-      a: 1,
-      ez: "文章强调 rewards 的可预测性，使得可对运营预算进行估算。",
-      ee: "It highlights predictable reward accrual, enabling confident operating budget estimates."
-    },
-    {
-      qz: "文中将“自供能合约”概括为哪种部署方式？",
-      qe: "How does the article describe deploying a self-funding contract/service?",
-      oz: ["部署后靠手动 top-up", "部署后 endow it with a stake，让其自主运行多年", "部署后必须每周升级", "部署后必须连接交易所 API"],
-      oe: ["Deploy then manual top-ups", "Deploy and endow it with a stake to run autonomously for years", "Deploy then upgrade weekly", "Deploy then connect an exchange API"],
-      a: 1,
-      ez: "文中写：deploy a service, endow it with a stake, sustain autonomously for years。",
-      ee: "It says: deploy a service, endow it with a stake, and sustain it autonomously for years."
-    },
-    {
       qz: "动态 NFT 的例子里，合约在铸造时会做什么以实现“从一开始就被资助”？",
       qe: "In the dynamic NFT example, what happens during minting to fund it 'from the start'?",
       oz: ["把 NFT 销毁", "将一部分 proceeds 导向 SfS 账户", "强制用户质押", "把元数据写死"],
@@ -532,8 +497,6 @@
       ez: "文章说：during minting, direct a proportion of proceeds to an SfS account → rewards cover updates in perpetuity。",
       ee: "It says: during minting, direct a portion of proceeds to an SfS account so rewards fund updates in perpetuity."
     },
-
-    // 51–60: Bulk sponsorship, utility, predictability, policy, rationale, future, conclusion
     {
       qz: "批量赞助场景中，文章举的例子是哪类机构？",
       qe: "In bulk sponsorship, what institution example does the article give?",
@@ -587,15 +550,6 @@
       a: 1,
       ez: "原文：token value is determined solely by yield expectations（在多数系统里）。",
       ee: "It states: token value is determined solely by yield expectations in most staking systems."
-    },
-    {
-      qz: "文中说“越多应用集成 SfS → 越大质押需求”的原因是？",
-      qe: "Why does the article say more SfS integration increases staking demand?",
-      oz: ["因为集成会销毁代币", "因为 staking 直接转化为可用吞吐/服务预算（usable throughput）", "因为团队强制要求", "因为会减少区块时间"],
-      oe: ["Because integration burns tokens", "Because staking directly translates into usable throughput/service budget", "Because the team mandates it", "Because block time decreases"],
-      a: 1,
-      ez: "文中说：staking directly translates into usable throughput（通过 credits 支付服务）。",
-      ee: "It says: staking directly translates into usable throughput (via credits funding services)."
     },
     {
       qz: "“Programmatic predictability” 对治理/金库的关键含义是？",
@@ -698,6 +652,7 @@
 
   function render() {
     const s = rawData[current];
+
     document.getElementById('ui-title').innerText = currentLang === 'zh'
       ? "Rialo SfS 经济模型深度考核（严格基于博客）"
       : "Rialo SfS Economics Master Quiz (Strictly Blog-Based)";
@@ -714,12 +669,20 @@
     const container = document.getElementById('options-container');
     container.innerHTML = '';
 
-    (currentLang === 'zh' ? s.oz : s.oe).forEach((opt, i) => {
+    const opts = (currentLang === 'zh' ? s.oz : s.oe);
+
+    opts.forEach((opt, i) => {
       const div = document.createElement('div');
       div.className = 'option' + (answered ? ' disabled' : '');
-      if (answered && i === s.a) div.classList.add('correct');
+
+      // ✅ 回放：答题后同时显示“正确项绿 + 选错项红”
+      if (answered) {
+        if (i === s.a) div.classList.add('correct');
+        if (i === chosen && chosen !== s.a) div.classList.add('wrong');
+      }
+
       div.innerHTML = `<b style="margin-right:10px">${String.fromCharCode(65+i)}.</b> ${opt}`;
-      div.onclick = () => select(i, div);
+      div.onclick = () => select(i);
       container.appendChild(div);
     });
 
@@ -731,21 +694,18 @@
     }
   }
 
-  function select(idx, el) {
+  function select(idx) {
     if (answered) return;
     answered = true;
-
-    if (idx === rawData[current].a) {
-      score++;
-    } else {
-      el.classList.add('wrong');
-    }
+    chosen = idx; // ✅ 记录用户选择，避免 render 重绘丢失“选错项”
+    if (idx === rawData[current].a) score++;
     render();
   }
 
   function nextQuestion() {
     current++;
     answered = false;
+    chosen = null; // ✅ 清空选择
     document.getElementById('feedback').style.display = 'none';
     document.getElementById('next-btn').style.display = 'none';
     if (current < total) render();
